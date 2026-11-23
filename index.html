@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Management Analytics</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <h1>Student Management Analytics</h1>
+
+    <!-- Dashboard Cards -->
+    <div class="dashboard">
+
+        <div class="card">
+            <h3>Total Students</h3>
+            <h2>{{ total_students }}</h2>
+        </div>
+
+        <div class="card">
+            <h3>Average Marks</h3>
+            <h2>{{ average_marks }}</h2>
+        </div>
+
+        <div class="card">
+            <h3>Top Performer</h3>
+
+            {% if top_student %}
+                <h2>{{ top_student.name }}</h2>
+                <p>{{ top_student.marks }} Marks</p>
+            {% else %}
+                <h2>No Data</h2>
+            {% endif %}
+        </div>
+
+    </div>
+
+
+    <!-- Add Student Form -->
+    <h2>Add Student</h2>
+
+    <form action="{{ url_for('add_student') }}" method="POST">
+
+        <input type="text" name="name"
+               placeholder="Student Name" required>
+
+        <input type="email" name="email"
+               placeholder="Email" required>
+
+        <input type="text" name="course"
+               placeholder="Course" required>
+
+        <input type="number" name="marks"
+               placeholder="Marks" min="0" max="100"
+               step="0.01" required>
+
+        <input type="number" name="attendance"
+               placeholder="Attendance" min="0" max="100"
+               step="0.01" required>
+
+        <button type="submit">Add Student</button>
+
+    </form>
+
+
+    <!-- Search Student -->
+    <h2>Search Student</h2>
+
+    <form action="{{ url_for('search_student') }}" method="GET">
+
+        <input type="text" name="keyword"
+               placeholder="Search by name or course">
+
+        <button type="submit">Search</button>
+
+        <a href="{{ url_for('home') }}">Show All</a>
+
+    </form>
+
+
+    <!-- Student Marks Chart -->
+    <h2>Student Marks Analytics</h2>
+
+    <div id="chartData"
+         data-labels='{{ chart_labels | tojson | forceescape }}'
+         data-marks='{{ chart_marks | tojson | forceescape }}'>
+    </div>
+
+    <canvas id="marksChart"></canvas>
+
+
+    <!-- Student Table -->
+    <h2>Student Records</h2>
+
+    <table border="1">
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Course</th>
+                <th>Marks</th>
+                <th>Attendance</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for student in students %}
+
+            <tr>
+                <td>{{ student.id }}</td>
+                <td>{{ student.name }}</td>
+                <td>{{ student.email }}</td>
+                <td>{{ student.course }}</td>
+                <td>{{ student.marks }}</td>
+                <td>{{ student.attendance }}%</td>
+
+                <td>
+
+                    <a href="{{ url_for('edit_student', id=student.id) }}">
+                        Edit
+                    </a>
+
+                    <form action="{{ url_for('delete_student', id=student.id) }}"
+                          method="POST">
+
+                        <button type="submit">Delete</button>
+
+                    </form>
+
+                </td>
+            </tr>
+
+            {% else %}
+
+            <tr>
+                <td colspan="7">No students found</td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+
+    <!-- JavaScript Chart -->
+    <script>
+
+        const chartElement = document.getElementById('chartData');
+
+        const labels = JSON.parse(chartElement.dataset.labels);
+        const marks = JSON.parse(chartElement.dataset.marks);
+
+        const ctx = document.getElementById('marksChart');
+
+        new Chart(ctx, {
+
+            type: 'bar',
+
+            data: {
+                labels: labels,
+
+                datasets: [{
+                    label: 'Student Marks',
+                    data: marks,
+                    backgroundColor: 'skyblue',
+                    borderColor: 'blue',
+                    borderWidth: 1
+                }]
+            },
+
+            options: {
+                responsive: true,
+
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+
+        });
+
+    </script>
+
+</body>
+</html>
